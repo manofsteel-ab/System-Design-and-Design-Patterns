@@ -41,11 +41,11 @@ class DefaultCachInterface(ABC):
 class LRUCache(DefaultCachInterface):
 
 	def __init__(self, capacity: int):
-		self.cache = {}
-		self.capacity = capacity
-		self.size = 0
-		self.head = CacheLine()
-		self.tail = CacheLine()
+		self.cache = {} # dictionary to store all cache record
+		self.capacity = capacity # maximum capacity of cach
+		self.size = 0 # no of items in current cache
+		self.head = CacheLine() # doubly_list start node
+		self.tail = CacheLine() # doubly list end node
 		self.head.set_next(self.tail)
 		self.tail.set_prev(self.head)
 
