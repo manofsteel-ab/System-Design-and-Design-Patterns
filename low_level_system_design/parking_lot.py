@@ -126,25 +126,45 @@ class MotorbikeSpot(ParkingSpot):
 #  Vehicle
 
 class Vehicle(ABC):
-    def __init__(self, vehicle_number, ticket, vehicle_type):
+    def __init__(
+            self, vehicle_number, vehicle_type, ticket=None, color=None
+    ):
         self.number = vehicle_number
-        self.ticket = ticket
         self.type = vehicle_type
+        self.ticket = ticket
+        self.color = color
+
+    def assign_ticket(self, ticket):
+        self.ticket = ticket
 
 
 class Car(Vehicle):
-    def __init__(self, vehicle_number, ticket):
-        super().__init__(vehicle_number, ticket, VehicleType.CAR)
+    def __init__(self, vehicle_number, ticket=None):
+        super().__init__(vehicle_number, VehicleType.CAR, ticket=ticket)
 
 
 class Truck(Vehicle):
-    def __init__(self, vehicle_number, ticket):
-        super().__init__(vehicle_number, ticket, VehicleType.TRUCK)
+    def __init__(self, vehicle_number, ticket=None):
+        super().__init__(vehicle_number, VehicleType.TRUCK, ticket=ticket)
 
 
 class Motorbike(Vehicle):
-    def __init__(self, vehicle_number, ticket):
-        super().__init__(vehicle_number, ticket, VehicleType.MOTORBIKE)
+    def __init__(self, vehicle_number, ticket=None):
+        super().__init__(vehicle_number, VehicleType.MOTORBIKE, ticket=ticket)
+
+
+class VehicleFactory:
+
+    @classmethod
+    def get_vehicle(cls, vehicle_number, vehicle_type):
+        if vehicle_type == VehicleType.CAR:
+            return Car(vehicle_number)
+        if vehicle_type == VehicleType.TRUCK:
+            return Truck(vehicle_number)
+        if vehicle_type == VehicleType.MOTORBIKE:
+            return Motorbike(vehicle_number)
+        else:
+            raise Exception("Unsupported vehicle type")
 
 # Parking ticket
 
@@ -196,24 +216,37 @@ class ParkingFloor:
     def get_total_spots(self):
         return len(self.spots)
 
-    def get_available_spots_count(self, spot_type=None):
+    def get_available_spots_count(self, spot_types=[]):
         count = 0
         for spot in self.spots:
-            if spot_type and spot.type != spot_type:
+            if spot_types and spot.type not in spot_types:
                 continue
             if spot.get_spot_status() == ParkingSpotStatus.AVAILABLE:
                 count = count+1
 
         return count
 
-    def get_unavailable_spots_count(self, spot_type=None):
+    def get_unavailable_spots_count(self, spot_types=[]):
         count = 0
         for spot in self.spots:
-            if spot_type and spot.type != spot_type:
+            if spot_types and spot.type not in spot_types:
                 continue
             if spot.get_spot_status() == ParkingSpotStatus.UNAVAILABLE:
                 count = count + 1
         return count
+
+    def get_first_free_spot(self, spot_type_list=[]):
+        for spot in self.spots:
+            if spot.type in spot_type_list:
+                return spot
+        return None
+
+    @property
+    def is_full(self):
+        for spot in self.spots:
+            if spot.status == ParkingSpotStatus.AVAILABLE:
+                return False
+        return True
 
 
 class ParkingLot:
@@ -249,11 +282,45 @@ class ParkingLot:
             self.floor_sequence_mapping[floor.number] = curr_floor_size
 
         def remove_floor(self):
-            # same as spot
             pass
 
-        def get_free_spot(self, spot_type):
-            pass
+        def get_free_spot(self, spot_types=[]):
+            for floor in self.floors:
+                free_spot = floor.get_first_free_spot(spot_type_list=spot_types)
+                if free_spot:
+                    return free_spot
+            raise Exception("No available slots")
+
+        def generate_ticket(self, vehicle_number, vehicle_type):
+            if self.is_full:
+                raise Exception("Parking full")
+            self.lock.acquire()
+            ticket = Ticket()
+            vehicle = VehicleFactory.get_vehicle(vehicle_number, vehicle_type)
+            vehicle.assign_ticket(ticket)
+            first_free_spot = self.get_free_spot(
+                self._spot_types(vehicle_type)
+            )
+            first_free_spot.allocate_vehicle(vehicle)
+            self.lock.release()
+
+        def _spot_types(self, vehicle_type):
+            if vehicle_type == VehicleType.MOTORBIKE:
+                return [
+                    VehicleType.CAR, VehicleType.TRUCK, VehicleType.MOTORBIKE
+                ]
+            if vehicle_type == VehicleType.CAR:
+                return [VehicleType.TRUCK, VehicleType.CAR]
+            if vehicle_type == VehicleType.MOTORBIKE:
+                return [VehicleType.MOTORBIKE]
+            return []
+
+        @property
+        def is_full(self):
+            for floor in self.floors:
+                if not floor.is_full:
+                    return False
+            return True
 
     def __init__(self, name, floor_limit):
         if not ParkingLot.instance:
@@ -281,7 +348,7 @@ class Account:
         self.password = password
         self.user_info = user_details
         self.status = status
-        self.parking_lot = ParkingLot(name="XXXX", floor_limit=10)
+        self.parking_lot = ParkingLot(name="XXXX", floor_limit=10).instance
 
 
 class Admin(Account):
@@ -313,17 +380,9 @@ class ParkingAttendant(Account):
     ):
         super().__init__(username, password, user_details, status)
 
-    def generate_ticket(self, vehicle_number, vehicle_type, spot_type):
-        ticket = Ticket()
-        if vehicle_type == VehicleType.CAR:
-            vehicle = Car(vehicle_number, ticket)
-        else:
-            raise Exception
-        spot = self.parking_lot.get_free_spot(spot_type)
-        spot.allocate_vehicle(vehicle)
-        return {
-            'ticket': ticket.ticket_number,
-            'spot': spot.spot_number,
-        }
+    def generate_ticket(self, vehicle_number, vehicle_type):
+        parking_lot = self.parking_lot
+        return parking_lot.generate_ticket(vehicle_number, vehicle_type)
+
 
 
