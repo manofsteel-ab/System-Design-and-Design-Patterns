@@ -6,6 +6,7 @@
 # Const Files
 import datetime
 from uuid import UUID
+from threading import Lock
 
 
 class ProductCategory:
@@ -123,12 +124,13 @@ class Customer(User):
             username, first_name, last_name, email, phone, password
         )
         self._cart = Cart()
+        self.orders = []
 
     def add_review(self, product_id, review):
-        return
+        pass
 
     def add_rating(self, product_id, rating):
-        return
+        pass
 
     def add_to_cart(self, product_id, quantity, price):
         item = Item(product_id, quantity, price)
@@ -136,6 +138,9 @@ class Customer(User):
 
     def remove_item(self, item):
         self._cart.remove_item(item)
+
+    def cart_checkout(self):
+        self._cart.checkout()
 
 
 class Seller(User):
@@ -166,11 +171,18 @@ class Product:
         self._item_per_customer = item_per_customer,
         self._total_review = 0
         self._reviews = []
+        self._lock = Lock()
 
     def get_product_list(
             self, **filter_args
     ):
         return
+
+    def acquire_loc(self):
+        self._lock.acquire(timeout=30)
+
+    def release_lock(self):
+        self._lock.release()
 
 
 class Item:
@@ -200,7 +212,20 @@ class Cart:
     def get_items(self):
         return self.items
 
-    def check_out(self):
+    def get_items_price(self):
+        """
+        return total price for all cart items
+        :return:
+        """
+        pass
+
+    def checkout(self):
+        """
+         step 1 - lock product if success else return
+         step 2 - do the payment if success else release loc
+         step 3 - create order - for both case release lock
+        :return:
+        """
         pass
 
 
@@ -209,7 +234,7 @@ class Order:
         self._id = UUID()
         self._status = OrderStatus.PENDING
         self._date = str(datetime.datetime.utcnow())
-        self.cart_ids = []
+        self.items = []
         self.order_logs = []
 
     def send_for_shipment(self, order_id):
