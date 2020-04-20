@@ -9,3 +9,10 @@
 perfect solution out there.
 - Systematic reuse of design ideas or best practices yields lower cost and
 higher solution
+
+## Types of design patterns
+There are mainly three types of design patterns
+
+- Creational
+- Structural
+- Behavioral
