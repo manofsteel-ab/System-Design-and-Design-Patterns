@@ -13,6 +13,6 @@ higher solution
 ## Types of design patterns
 There are mainly three types of design patterns
 
-- Creational
-- Structural
-- Behavioral
+- Creational (Mostly based on polymorphism concept)
+- Structural (Mostly based on inheritance)
+- Behavioral (Mostly based on methods and their signature)
