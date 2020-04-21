@@ -25,3 +25,9 @@ s1 = Sample()
 s2 = Sample()
 
 print(id(s1) == id(s2))
+
+# meta_init
+# __call__
+# Sample_init
+# __call__
+# True
