@@ -1,6 +1,7 @@
 ## Design elevator
 
 Before coding, We need to understand the product/system properly.
+
 To understand the product/system -
 - we should know why and where we need this product - Purpose
 - who are the users - Product Users
@@ -8,12 +9,12 @@ To understand the product/system -
 
 Now, let's talk about why and where we need elevator ?
 
-Where we need this ?
+# Where we need this ?
 
 In multi-floor Buildings. It could be office buildings, residential buildings,
 or malls.
 
-Why we need this?
+# Why we need this?
 We are not superman, obviously we need something to go from one floor to
 another or move some items from one floor to another.
 
