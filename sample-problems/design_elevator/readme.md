@@ -23,7 +23,7 @@ One solution is use stairs, but obviously it's very tiring,
 gonna take lots of effort and time.
 That's why we need elevator to reduce our effort and save times.
 
-## who are the users?
+## Who are the users?
 
 If we talk about office buildings, then users could be employee, boss,
 maintenance person etc..
@@ -42,7 +42,7 @@ maintenance person etc..
 Let's start with small feature
 
 
-## What are the elements that you can think of about an elevator?
+## What are the elements that you can think of for an elevator?
 
 - Elevator controller(control all the events and moves car)
 - Car
