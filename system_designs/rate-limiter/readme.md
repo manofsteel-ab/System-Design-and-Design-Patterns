@@ -49,9 +49,34 @@ counter exceed the rate then discard the request.
 It insure that recent request get processed without being starved by old request.
 
 *** Disadvantages ***
+
 However single burst traffic that occurs near the boundary can result in twice
 the rate of requests being processed, because it will allow the request for
 both the current and next window.
 
 
+### Logging
+
+In this algorithm, we keep the logs of each request time and log with timestamp
+beyond the threshold are discarded. So whenever new request comes we calculate
+the sum of logs to determine the request rate, If the request would exceed the
+threshold rate, then it is held.
+
+*** Advantages ***
+
+This will solve the boundary burst problem. It also solve the sudden rush in
+request that we faced in fixed window algorithm.
+
+*** Disadvantages ***
+
+It's very expensive to store these much data and also expensive to compute
+because we need timestamp sum to decide request processing.
+
+
 ### Sliding window algorithm
+
+It's actually combination of fixed window and Sliding log algorithm
+
+In this algorithm, the time window considered from the time request made plus
+window time. Then we calculate how many request are made between that window,
+if threshold already reached, then we discard the current request.
