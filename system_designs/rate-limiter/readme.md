@@ -15,7 +15,7 @@ cost, to stop spam.
 
 There are actually many different ways to enable rate limiting.
 
-### Leaky bucker (token bucket)
+### Leaky bucket
 
 This is a basic approach of rate limit via queue. So when a new request comes,
 we append it to end of the queue(at regular interval we keep processing the
