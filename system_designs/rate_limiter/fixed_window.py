@@ -67,6 +67,10 @@ class SendRequest:
             time.sleep(1)
 
 
+class TestMe:
+    pass
+
+
 if __name__ == '__main__':
     t1 = threading.Thread(name='t1',target=SendRequest.request_task)
     t2 = threading.Thread(name='t2',target=SendRequest.request_task)
