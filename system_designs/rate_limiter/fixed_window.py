@@ -4,50 +4,71 @@ import threading
 import time
 import random
 
-
-# Rate limit(per minut) Configuration api level, user level
-class Configuration:
-    def __init__(self):
-        self.total_call = 50
-        self.api = {'api_1': 10, 'api_2': 10}
-        self.user = {'user_1': 10, 'user_2':20}
-        self.user_api = {
-            'user_1_api_1': 5, 'user_2_api_1':10,
-            'user_1_api_2': 5, 'user_2_api_2':10,
-        }
-
 class RateLimiterInterface(ABC):
 
     def __init__(self):
-        self.api_db = {} # ex: key=api_1_12:00 and value will be freq
-        self.user_db = {} # ex. key=user_1_12:00 and value will be freq
-        self.user_api_db = {} # ex. key=user_1_api_1_12:00 and value will be freq
-        self.total_call_db = {} # ex. key=12:00 and value will be freq
+        self.db_1 = {} # ex: key: user_id,  value {freq:starttime}
+
 
     @abstractmethod
-    def allow(self):
+    def allow(self, user_id, allowed_reqest, rate):
         pass
 
     def get_current_time(self):
         return int(time.time())
 
 
-
 class FixedWindowRateLimiter(RateLimiterInterface):
 
     def __init__(self):
         super().__init__()
+        self._lock = threading.Lock()
 
-    def allow(self):
-        pass
+    def allow(self, user_id, allowed_reqest, in_second=10):
+        try:
+            self._lock.acquire()
+            current_time = self.get_current_time()
+            stored_freq = self.db_1.get(user_id)
+            allowed = True
+            if not stored_freq:
+                self.db_1[user_id] = (1, current_time)
+                self._lock.release()
+                return allowed
+
+            diff = current_time - stored_freq[1]
+            print(current_time,stored_freq[1],diff)
+            if diff > in_second:
+                self.db_1[user_id] = (1, current_time)
+            elif diff < in_second and stored_freq[0]<allowed_reqest:
+                self.db_1[user_id]=(stored_freq[0]+1, stored_freq[1])
+            else:
+                allowed = False
+            self._lock.release()
+            return allowed
+        except Exception as e:
+            print(str(e))
+
+
 
 class SendRequest:
 
     @classmethod
-    def request_task(cls):
-        users = ['user_1', 'user_2']
-        apis = ['api_1', 'api_2']
-
+    def request_task(cls,counter):
+        users = ['user_1']
+        rate_limiter = FixedWindowRateLimiter()
         while True:
-            user = (random.randint(1, 100))%2
-            api = (random.randint(1, 100))%2
+            id = users[(random.randint(1, 100))%1]
+            print("Thread {}".format(threading.currentThread().ident))
+            print(counter,rate_limiter.allow(user_id=id, allowed_reqest=5))
+            counter+=1
+            time.sleep(1)
+
+
+if __name__ == '__main__':
+    counter = 1
+    t1 = threading.Thread(target=SendRequest.request_task, args=(counter,))
+    t2 = threading.Thread(target=SendRequest.request_task, args=(counter,))
+    t3 = threading.Thread(target=SendRequest.request_task, args=(counter,))
+    t1.start()
+    # t2.start()
+    # t3.start()
