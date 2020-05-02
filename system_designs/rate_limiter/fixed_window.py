@@ -7,7 +7,7 @@ import random
 class RateLimiterInterface(ABC):
 
     def __init__(self):
-        self.db_1 = {} # ex: key: user_id,  value {freq:starttime}
+        self.db = {} # ex: key: user_id,  value {freq:starttime}
 
 
     @abstractmethod
@@ -28,19 +28,18 @@ class FixedWindowRateLimiter(RateLimiterInterface):
         try:
             self._lock.acquire()
             current_time = self.get_current_time()
-            stored_freq = self.db_1.get(user_id)
+            stored_freq = self.db.get(user_id)
             allowed = True
             if not stored_freq:
-                self.db_1[user_id] = (1, current_time)
+                self.db[user_id] = (1, current_time)
                 self._lock.release()
                 return allowed
 
             diff = current_time - stored_freq[1]
-            print(current_time,stored_freq[1],diff)
             if diff > in_second:
-                self.db_1[user_id] = (1, current_time)
+                self.db[user_id] = (1, current_time)
             elif diff < in_second and stored_freq[0]<allowed_reqest:
-                self.db_1[user_id]=(stored_freq[0]+1, stored_freq[1])
+                self.db[user_id]=(stored_freq[0]+1, stored_freq[1])
             else:
                 allowed = False
             self._lock.release()
@@ -51,24 +50,42 @@ class FixedWindowRateLimiter(RateLimiterInterface):
 
 
 class SendRequest:
+    _request_id=1
 
     @classmethod
-    def request_task(cls,counter):
+    def request_task(cls):
         users = ['user_1']
         rate_limiter = FixedWindowRateLimiter()
         while True:
             id = users[(random.randint(1, 100))%1]
-            print("Thread {}".format(threading.currentThread().ident))
-            print(counter,rate_limiter.allow(user_id=id, allowed_reqest=5))
-            counter+=1
+            print(
+                "Thread {}".format(threading.currentThread().getName()),
+                cls._request_id,
+                rate_limiter.allow(user_id=id, allowed_reqest=5)
+            )
+            cls._request_id+=1
             time.sleep(1)
 
 
 if __name__ == '__main__':
-    counter = 1
-    t1 = threading.Thread(target=SendRequest.request_task, args=(counter,))
-    t2 = threading.Thread(target=SendRequest.request_task, args=(counter,))
-    t3 = threading.Thread(target=SendRequest.request_task, args=(counter,))
+    t1 = threading.Thread(name='t1',target=SendRequest.request_task)
+    t2 = threading.Thread(name='t2',target=SendRequest.request_task)
+    t3 = threading.Thread(name='t3',target=SendRequest.request_task)
     t1.start()
-    # t2.start()
-    # t3.start()
+    t2.start()
+    t3.start()
+
+
+"""
+What are some of the problems with our algorithm?
+
+- boundary burst
+- in case of distributed environment, race condition
+- memory - ex suppose user_id takes 8 byte, 2 byte to store the freq and 4 byte
+            to starttime - total = 14 byte, if we assume 20 byte for hashtable
+            then total = 34byte for 1M user total space = 34*1M = 34MB(million byte)
+
+
+
+
+"""
