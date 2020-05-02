@@ -80,3 +80,7 @@ It's actually combination of fixed window and Sliding log algorithm
 In this algorithm, the time window considered from the time request made plus
 window time. Then we calculate how many request are made between that window,
 if threshold already reached, then we discard the current request.
+
+Problem with sliding window is space. It takes more space than fixed window.
+
+Another solution is use hybrid approach, sliding window + fixed window
