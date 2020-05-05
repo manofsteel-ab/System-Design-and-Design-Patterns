@@ -24,7 +24,9 @@ optional - Analytics for admin, like shortening rate, how many times redirection
 -  Redirection should be real time
 -  Non guessable short link
 
-# Capacity estimation and constraints( assume 100:1 read/write ratio)
+# Capacity estimation and constraints
+
+Because system will be read heavy. Let's assume 100:1 will be the read/write ratio.
 
 Suppose we are generating 200 new url per second.
 
