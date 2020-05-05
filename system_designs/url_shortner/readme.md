@@ -6,7 +6,7 @@ To create short url.
 
 ## Basic Requirements
 
-*** Functional Requirements
+***Functional Requirements***
 
 - system should be able to generate short and unique url.
 - when user access a short link, it should redirect to origin URL
@@ -18,7 +18,7 @@ optional - Analytics for admin, like shortening rate, how many times redirection
            happened
 
 
-*** Non-Functional Requirements
+***Non-Functional Requirements***
 
 -  System should be highly available
 -  Redirection should be real time
