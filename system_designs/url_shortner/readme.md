@@ -134,24 +134,20 @@ Now the problem with this approach, how do we get decimal number?
 
 - Use random number, but it could also cause collision, and it will not work on scale.
 - Use counter - This will avoid the collision but having single counter is not scalable.
-Because we could have multiple app server, and each server is requesting a number from the counter
-, so will increase the load on counter service and it is also a SPF(single point failure).
+  Because we could have multiple app server, and each server is requesting a number from the counter, so will increase the load on counter service and it is also a SPF(single point failure).
 
 - Now let have multiple counter server, each server is having their own range of counting.
+  for example we have c1 (1-100M) c2(1001M to 200M)....
+  Now the problem with this is, what will happen if a counter reaches its limit, how
+  we gonna reset the counter?
 
-for example we have c1 (1-100M) c2(1001M to 200M)....
-Now the problem with this is, what will happen if a counter reaches its limit, how
-we gonna reset the counter?
+  So basically we need extra service, who has the information about counters and
+  responsible for resetting the counter(allocating new range).
 
-So basically we need extra service, who has the information about counters and
-responsible for resetting the counter(allocating new range).
-
-Now, how will we manage if user provide his custom short code ?
-Think about it.
+  Now, how will we manage if user provide his custom short code ? ------?????
 
 - Use KGS (key generation service) - Generate hash code before hand and store them in db(key-val).
-
-KGS will make sure all the keys inserted into key-DB are unique.
+  KGS will make sure all the keys inserted into key-DB are unique.
 
 **Can concurrency cause problems ?**
 
