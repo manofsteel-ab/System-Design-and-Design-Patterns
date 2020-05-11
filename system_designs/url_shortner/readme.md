@@ -153,10 +153,20 @@ Think about it.
 
 KGS will make sure all the keys inserted into key-DB are unique.
 
-**Question ? Can concurrency cause problems ?**
+**Can concurrency cause problems ?**
 
 What if multiple app server is trying to access the keys concurrently ? In this
 case we might end up with same key for more than two request.
 
 To solve this problem, server can user KGS to read/mark keys in the database.
 It can use two table to store the keys. One for not used code and one for used code.
+
+As soon as KGS gives key to a server, it can move them to used_keys table.
+
+KGS can always keep some keys in memory to full fill the request faster.
+
+**Isn’t KGS a single point of failure?**
+Yes, It is. But we can have multiple replicas, so when primary server goes down, the standby server can take over.
+
+**Can each app server cache some keys from key-DB?**
+Yes, we can but if server goes down, we will lose those keys.
